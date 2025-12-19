@@ -4,14 +4,24 @@ from src.core.job.mapper import Mapper
 class VowelsConsonantsMapper(Mapper):
     def map(self, record, emit):
         vowels = "аеєиіїоуюяaeiou"
-        record = str(record).lower()
-        # Знаходимо слова, що складаються з літер і підкреслень
-        words = re.findall(r'\b[\w]+\b', record)  # \w включає літери, цифри та _
+        text = str(record).lower()
+        words = text.split()
         
         for word in words:
-            length = len(word)  # довжина включно з підкресленнями
-            # Рахуємо голосні та приголосні лише серед букв
-            letters_only = re.sub(r'[^а-яєіїa-z]', '', word)
-            v_count = sum(1 for c in letters_only if c in vowels)
-            c_count = sum(1 for c in letters_only if c.isalpha() and c not in vowels)
-            emit(length, (v_count, c_count))
+            clean_word = word.strip('.,!?;:"()[]{}')            
+            if not clean_word:
+                continue            
+            letters = ""
+            for char in clean_word:
+                if char.isalpha():
+                    letters += char
+            if not letters:
+                continue
+            vowel_count = 0
+            for char in letters:
+                if char in vowels:
+                    vowel_count += 1
+            
+            consonant_count = len(letters) - vowel_count
+            
+            emit(len(clean_word), (vowel_count, consonant_count))
